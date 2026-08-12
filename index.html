@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex, nofollow">
 <title>西暦⇔元号 変換</title>
 <style>
   body { font-family: sans-serif; background: #f4f7f6; padding: 20px; max-width: 600px; margin: auto; color: #333; display: flex; flex-direction: column; min-height: 95vh; box-sizing: border-box; }
@@ -12,16 +11,17 @@
   .clear-btn { padding: 8px 15px; background: #ddd; color: #333; border: none; border-radius: 5px; cursor: pointer; font-size: 15px; font-family: inherit; transition: 0.2s; }
   .clear-btn:hover { background: #ccc; }
 
-  /* スマホではタイトルを非表示にし、表示領域を広く使う */
+  /* スマホではタイトルとクリアボタンを縦に並べ、重なりを防止 */
   @media (max-width: 480px) {
-    body { padding: 10px; min-height: 100vh; }
+    body { padding: 14px; }
     .header-container {
-      justify-content: flex-end;
-      margin-top: 0;
-      margin-bottom: 8px;
-      min-height: 36px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
     }
-    .header-container h2 { display: none; }
+    .clear-btn {
+      align-self: flex-end;
+    }
     #panel-table { padding: 10px !important; }
     .table-scroll { max-height: 76vh; }
     th, td { padding: 9px 6px; }
