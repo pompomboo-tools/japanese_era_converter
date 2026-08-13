@@ -235,10 +235,10 @@ function generateQuickReference() {
   let html = '';
   let isEven = false; // 背景色のストライプ制御用
 
-  // 現在の年から1868年まで降順でループ
-  for (let y = currentYear; y >= 1868; y--) {
-    // 該当する元号を取得し、新しい元号が上になるように反転（例: 令和 -> 平成）
-    const matches = eras.filter(e => y >= e.startYear && y <= e.endYear).reverse();
+  // 1868年から現在の年まで昇順でループ
+  for (let y = 1868; y <= currentYear; y++) {
+    // 該当する元号を取得し、古い元号が上になるように（例: 明治 -> 大正）
+    const matches = eras.filter(e => y >= e.startYear && y <= e.endYear);
 
     // 西暦の「年」単位で背景色を交互に変える
     const bgClass = isEven ? 'bg-even' : 'bg-odd';
@@ -259,6 +259,12 @@ function generateQuickReference() {
     }
   }
   tbody.innerHTML = html;
+
+  // スクロールエリア要素を取得し、一番下までスクロールさせる
+  const scrollArea = document.querySelector('.table-scroll');
+  if (scrollArea) {
+    scrollArea.scrollTop = scrollArea.scrollHeight;
+  }
 }
 </script>
 </body>
