@@ -1,0 +1,268 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="./favicon.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png" sizes="180x180">
+<title>西暦⇔元号 変換</title>
+<style>
+:root{--blue:#007aff;--blue2:#0062cc;--bg:#f2f2f7;--card:#fff;--text:#1c1c1e;--sub:#636366;--sep:#d1d1d6;--fill:rgba(118,118,128,.12);--radius:16px;--cr:11px;--shadow:0 6px 20px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04)}
+*{box-sizing:border-box}html{background:var(--bg);-webkit-text-size-adjust:100%}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic UI",Meiryo,sans-serif;background:var(--bg);color:var(--text);margin:0 auto;width:100%;max-width:700px;min-height:100vh;padding:max(22px,env(safe-area-inset-top)) 20px max(28px,env(safe-area-inset-bottom));overflow-x:hidden;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
+.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 16px;padding:5px;background:var(--fill);border-radius:14px}.tab-btn{min-width:0;min-height:42px;padding:8px 6px;cursor:pointer;border:0;background:transparent;border-radius:10px;font:inherit;font-size:14px;font-weight:600;color:var(--sub);white-space:nowrap;transition:transform .08s ease,background-color .15s ease,color .15s ease,box-shadow .15s ease}.tab-btn.active{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.panel,.tab-panel{background:var(--card);padding:22px;border-radius:var(--radius);box-shadow:var(--shadow)}.tab-panel{display:none}.tab-panel.active{display:block}label{display:block;font-weight:600;color:var(--sub);margin-bottom:7px;font-size:14px}input[type="number"],select{width:100%;min-width:0;height:46px;padding:0 13px;border:1px solid var(--sep);border-radius:var(--cr);font:inherit;font-size:16px;color:var(--text);background:#fff;outline:none;transition:border-color .15s ease,box-shadow .15s ease}input[type="number"]:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,122,255,.14)}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px}.input-group{margin-bottom:15px}
+.action-row{display:grid;grid-template-columns:1fr 3fr;gap:10px;align-items:stretch;margin-top:8px}.clear-btn{min-height:50px;padding:11px 10px;background:transparent;color:var(--sub);border:1px solid var(--sep);border-radius:13px;cursor:pointer;font:inherit;font-size:15px;font-weight:500;transition:transform .08s ease,background-color .15s ease,border-color .15s ease,color .15s ease}button.action{min-height:50px;padding:11px 18px;background:var(--blue);color:#fff;border:0;border-radius:13px;cursor:pointer;font:inherit;font-size:16px;font-weight:700;width:100%;transition:transform .08s ease,background-color .15s ease}
+.result{margin-top:16px;padding:16px;border-radius:14px;text-align:center;font-size:20px;font-weight:700;display:none;border:1px solid transparent}.result.show{display:block}.result.success{background:rgba(0,122,255,.08);color:var(--text);border-color:rgba(0,122,255,.18)}.result.error{background:rgba(255,59,48,.07);color:#c62921;border-color:rgba(255,59,48,.18);font-size:16px}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:0}th,td{padding:10px;text-align:center;border-bottom:1px solid #e5e5ea}th{background:#f2f2f7;color:var(--sub);font-weight:700}.table-scroll{max-height:70vh;overflow-y:auto;border:1px solid #e5e5ea;border-radius:12px}.table-scroll th{position:sticky;top:0;z-index:1}.bg-even td{background:#f9f9fb}.bg-odd td{background:#fff}#quick-reference-table th:first-child,#quick-reference-table td:first-child{border-right:1px solid #e5e5ea}.era-table{margin-top:16px!important}.era-table h3{text-align:left;color:var(--text);margin-top:0;margin-bottom:12px;font-size:15px}.era-table tr:nth-child(even) td{background:#f9f9fb}
+button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(0,122,255,.28);outline-offset:2px}button:active{transform:scale(.98)}
+
+/* インフォメーションボタン：PCは作業領域下の右下、スマホは作業領域上の右上 */
+.info-footer{display:flex;justify-content:flex-end;align-items:center;order:10;margin-top:12px}
+.info-button{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--cr);background:#fff;color:var(--sub);border:1px solid var(--sep);padding:0;cursor:pointer;outline:none;font-family:Georgia,"Times New Roman",serif;font-size:20px;font-weight:400;font-style:normal;line-height:1;-webkit-tap-highlight-color:transparent;transition:transform .08s ease,background-color .15s ease,border-color .15s ease,color .15s ease}
+.modal-overlay{position:fixed;inset:0;width:100vw;height:100vh;background:rgba(0,0,0,.4);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;justify-content:center;align-items:center;z-index:9999;opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s ease;padding:20px}
+.modal-overlay.active{opacity:1;visibility:visible}
+.modal-content{position:relative;background:#fff;border-radius:20px;max-width:90vw;max-height:85vh;box-shadow:0 20px 40px rgba(0,0,0,.25);overflow:hidden;display:flex;flex-direction:column;transform:scale(.92);transition:transform .25s cubic-bezier(.175,.885,.32,1.275)}
+.modal-overlay.active .modal-content{transform:scale(1)}
+.modal-close-btn{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;background:rgba(118,118,128,.12);color:var(--sub);border:0;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;padding:0;transition:background .15s ease,transform .15s ease;-webkit-tap-highlight-color:transparent}
+.modal-close-btn:active{transform:scale(.9);background:rgba(118,118,128,.25)}
+.modal-close-btn svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
+.modal-body{padding:16px;overflow-y:auto;display:flex;justify-content:center;align-items:center}
+.modal-body img{max-width:100%;height:auto;border-radius:12px;display:block}
+@media(hover:hover) and (pointer:fine){.tab-btn:hover{background:rgba(255,255,255,.72);color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.08)}.tab-btn.active:hover{background:#fff;box-shadow:0 2px 7px rgba(0,0,0,.14)}button.action:hover{background:var(--blue2)}.clear-btn:hover{background:rgba(118,118,128,.08);border-color:#c7c7cc;color:var(--text)}.info-button:hover{background:rgba(118,118,128,.08);border-color:#c7c7cc;color:var(--text)}}
+@media(max-width:580px){body{padding:max(10px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}.info-footer{order:-1;margin-top:0;margin-bottom:8px}.tabs{gap:4px}.tab-btn{font-size:13px;padding:7px 3px}.panel,.tab-panel{padding:14px;border-radius:15px}.row{grid-template-columns:1fr 1fr;gap:8px}.action-row{grid-template-columns:1fr 3fr;gap:8px}.clear-btn,button.action{min-height:48px}.table-scroll{max-height:76vh}th,td{padding:9px 6px;font-size:13px}}
+@media(max-width:350px){.tab-btn{font-size:12px}.panel,.tab-panel{padding:11px}.action-row{gap:6px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+
+<div class="tabs">
+  <button class="tab-btn" onclick="switchTab('panel-seireki', event)">西暦 → 元号</button>
+  <button class="tab-btn" onclick="switchTab('panel-gengo', event)">元号 → 西暦</button>
+  <button class="tab-btn active" onclick="switchTab('panel-table', event)">早見表</button>
+</div>
+
+<!-- 西暦 → 元号 -->
+<div id="panel-seireki" class="tab-panel">
+  <div class="input-group">
+    <label for="seireki-input">西暦（年）を入力</label>
+    <input type="number" id="seireki-input" placeholder="例: 2025" min="1868" max="2100">
+  </div>
+  <div class="action-row">
+    <button type="button" class="clear-btn" onclick="clearSettings()">クリア</button>
+    <button class="action" onclick="convertToGengo()">元号に変換する</button>
+  </div>
+  <div id="result-seireki" class="result"></div>
+</div>
+
+<!-- 元号 → 西暦 -->
+<div id="panel-gengo" class="tab-panel">
+  <div class="row">
+    <div>
+      <label for="gengo-select">元号を選択</label>
+      <select id="gengo-select">
+        <option value="meiji">明治</option>
+        <option value="taisho">大正</option>
+        <option value="showa">昭和</option>
+        <option value="heisei" selected>平成</option>
+        <option value="reiwa">令和</option>
+      </select>
+    </div>
+    <div>
+      <label for="gengo-year-input">年を入力</label>
+      <input type="number" id="gengo-year-input" placeholder="例: 7" min="1">
+    </div>
+  </div>
+  <div class="action-row">
+    <button type="button" class="clear-btn" onclick="clearSettings()">クリア</button>
+    <button class="action" onclick="convertToSeireki()">西暦に変換する</button>
+  </div>
+  <div id="result-gengo" class="result"></div>
+</div>
+
+<!-- 早見表 -->
+<div id="panel-table" class="tab-panel active" style="padding: 20px;">
+  <div class="table-scroll">
+    <table id="quick-reference-table">
+      <thead>
+        <tr>
+          <!-- 幅を50%ずつに設定し、中央に罫線が来るように調整 -->
+          <th style="width: 50%;">西暦</th>
+          <th style="width: 50%;">元号</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- JavaScriptで現在の年から動的に生成されます -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 下部 対応範囲テーブル -->
+<div class="panel era-table" style="margin-top: 20px;">
+  <h3>元号一覧（対応範囲）</h3>
+  <table>
+    <thead><tr><th>元号</th><th>開始日</th><th>終了日</th></tr></thead>
+    <tbody>
+      <tr><td>明治</td><td>1868年1月25日</td><td>1912年7月29日</td></tr>
+      <tr><td>大正</td><td>1912年7月30日</td><td>1926年12月24日</td></tr>
+      <tr><td>昭和</td><td>1926年12月25日</td><td>1989年1月7日</td></tr>
+      <tr><td>平成</td><td>1989年1月8日</td><td>2019年4月30日</td></tr>
+      <tr><td>令和</td><td>2019年5月1日</td><td>—</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- インフォメーションボタン -->
+<div class="info-footer">
+  <button type="button" class="info-button" id="infoButton" aria-label="インフォメーション" aria-haspopup="dialog" aria-controls="infoModal">i</button>
+</div>
+<!-- インフォメーションモーダル -->
+<div class="modal-overlay" id="infoModal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="インフォメーション">
+  <div class="modal-content">
+    <button type="button" class="modal-close-btn" id="modalCloseBtn" aria-label="閉じる">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+    <div class="modal-body"><img src="pompomboo-tools.png" alt="Pompomboo Tools"></div>
+  </div>
+</div>
+<script>
+
+// ================= インフォメーションモーダル =================
+const infoButton = document.getElementById('infoButton');
+const infoModal = document.getElementById('infoModal');
+const modalCloseBtn = document.getElementById('modalCloseBtn');
+let infoLastFocusedElement = null;
+function openInfoModal(){
+  infoLastFocusedElement = document.activeElement;
+  infoModal.classList.add('active');
+  infoModal.setAttribute('aria-hidden','false');
+  modalCloseBtn.focus();
+}
+function closeInfoModal(){
+  infoModal.classList.remove('active');
+  infoModal.setAttribute('aria-hidden','true');
+  if(infoLastFocusedElement) infoLastFocusedElement.focus();
+}
+infoButton.addEventListener('click',openInfoModal);
+modalCloseBtn.addEventListener('click',closeInfoModal);
+infoModal.addEventListener('click',e=>{if(e.target===infoModal)closeInfoModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&infoModal.classList.contains('active'))closeInfoModal();});
+const eras = [
+  { name: '明治', key: 'meiji',  startYear: 1868, endYear: 1912, offset: 1867 },
+  { name: '大正', key: 'taisho', startYear: 1912, endYear: 1926, offset: 1911 },
+  { name: '昭和', key: 'showa',  startYear: 1926, endYear: 1989, offset: 1925 },
+  { name: '平成', key: 'heisei', startYear: 1989, endYear: 2019, offset: 1988 },
+  { name: '令和', key: 'reiwa',  startYear: 2019, endYear: 9999, offset: 2018 }
+];
+
+window.onload = () => {
+  generateQuickReference(); // 早見表の動的生成
+};
+
+document.getElementById('seireki-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') convertToGengo(); });
+document.getElementById('gengo-year-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') convertToSeireki(); });
+
+function clearSettings() {
+  document.getElementById('seireki-input').value = '';
+  document.getElementById('result-seireki').className = 'result';
+  document.getElementById('gengo-select').value = 'heisei';
+  document.getElementById('gengo-year-input').value = '';
+  document.getElementById('result-gengo').className = 'result';
+
+  const activePanel = document.querySelector('.tab-panel.active').id;
+  if (activePanel === 'panel-seireki') document.getElementById('seireki-input').focus();
+  else if (activePanel === 'panel-gengo') document.getElementById('gengo-year-input').focus();
+}
+
+function switchTab(id, e) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  e.target.classList.add('active');
+
+  if(id === 'panel-seireki') document.getElementById('seireki-input').focus();
+  else if (id === 'panel-gengo') document.getElementById('gengo-year-input').focus();
+}
+
+function formatYear(n) { return n === 1 ? '元年' : n + '年'; }
+
+function convertToGengo() {
+  const input = document.getElementById('seireki-input');
+  const resultDiv = document.getElementById('result-seireki');
+  const year = parseInt(input.value);
+  if (isNaN(year)) { showResult(resultDiv, '西暦を入力してください。', 'error'); return; }
+
+  const matches = eras.filter(e => year >= e.startYear && year <= e.endYear);
+  if (matches.length === 0) { showResult(resultDiv, '変換できませんでした。', 'error'); return; }
+
+  const gengoTexts = matches.map(e => `${e.name}${formatYear(year - e.offset)}`);
+  const gengoStr = gengoTexts.join(' / ');
+
+  showResult(resultDiv, `西暦 ${year}年 は<br><span style="font-size: 1.2em;">${gengoStr}</span>`, 'success');
+}
+
+function convertToSeireki() {
+  const selectVal = document.getElementById('gengo-select').value;
+  const yearInput = document.getElementById('gengo-year-input');
+  const resultDiv = document.getElementById('result-gengo');
+  const gengoYear = parseInt(yearInput.value);
+  if (isNaN(gengoYear) || gengoYear < 1) { showResult(resultDiv, '正しい年を入力してください。', 'error'); return; }
+
+  const era = eras.find(e => e.key === selectVal);
+  const seirekiYear = gengoYear + era.offset;
+  if (seirekiYear > era.endYear) { showResult(resultDiv, `${era.name}は最大 ${formatYear(era.endYear - era.offset)} までです。`, 'error'); return; }
+
+  showResult(resultDiv, `${era.name}${formatYear(gengoYear)} は<br><span style="font-size: 1.2em;">西暦 ${seirekiYear}年</span>`, 'success');
+}
+
+function showResult(el, html, type) { 
+  el.innerHTML = html; 
+  el.className = 'result show ' + type; 
+}
+
+// 早見表を動的に生成する関数
+function generateQuickReference() {
+  const tbody = document.querySelector('#quick-reference-table tbody');
+  const currentYear = new Date().getFullYear();
+  let html = '';
+  let isEven = false; // 背景色のストライプ制御用
+
+  // 1868年から現在の年まで昇順でループ
+  for (let y = 1868; y <= currentYear; y++) {
+    // 該当する元号を取得し、古い元号が上になるように（例: 明治 -> 大正）
+    const matches = eras.filter(e => y >= e.startYear && y <= e.endYear);
+
+    // 西暦の「年」単位で背景色を交互に変える
+    const bgClass = isEven ? 'bg-even' : 'bg-odd';
+    isEven = !isEven;
+
+    if (matches.length === 1) {
+      // 通常の年
+      const gengoText = `${matches[0].name}${formatYear(y - matches[0].offset)}`;
+      html += `<tr class="${bgClass}"><td>${y}年</td><td>${gengoText}</td></tr>`;
+    } else {
+      // 改元年（元号が複数ある場合）
+      // 1行目（西暦セルをrowspanで結合）
+      html += `<tr class="${bgClass}"><td rowspan="${matches.length}">${y}年</td><td>${matches[0].name}${formatYear(y - matches[0].offset)}</td></tr>`;
+      // 2行目以降
+      for (let i = 1; i < matches.length; i++) {
+        html += `<tr class="${bgClass}"><td>${matches[i].name}${formatYear(y - matches[i].offset)}</td></tr>`;
+      }
+    }
+  }
+  tbody.innerHTML = html;
+
+  // スクロールエリア要素を取得し、一番下までスクロールさせる
+  const scrollArea = document.querySelector('.table-scroll');
+  if (scrollArea) {
+    scrollArea.scrollTop = scrollArea.scrollHeight;
+  }
+}
+</script>
+</body>
+</html>
